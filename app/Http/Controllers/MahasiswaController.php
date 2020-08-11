@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mahasiswa;
+use App\Prodi;
+use DataTables;
 use Illuminate\Http\Request;
 
 class MahasiswaController extends Controller
@@ -14,7 +16,18 @@ class MahasiswaController extends Controller
      */
     public function index()
     {
-        return "Halaman Index Mahasiswa";     
+        return view('mahasiswa.index');
+    }
+    public function mhs_list()
+    {
+         $mhs = Mahasiswa :: with('mprodi')->get();
+         return Datatables :: of($mhs)
+                -> addIndexColumn()
+                -> addColumn('action', function ($mhs) {
+                    $action = '<a href="/mhs/edit/'.$mhs->nim.'" class ="btn btn-xs btn-primary"><i class="glyphicon glyphicon-edit"></i> Edit</a> | <a href="/mhs/delete/'.$mhs->nim.'" class ="btn btn-xs btn-danger"><i class="glyphicon glyphicon-edit"></i> Hapus</a>';
+                    return $action;
+                })
+                ->make();
     }
 
     /**
@@ -24,7 +37,8 @@ class MahasiswaController extends Controller
      */
     public function create()
     {
-        //
+        $prodi = prodi::all();
+        return view('mahasiswa.create',compact('prodi'));
     }
 
     /**
@@ -35,7 +49,13 @@ class MahasiswaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nim' => 'required',
+            'nama_lengkap' => 'required',
+        ]);
+        Mahasiswa::create($request->all());
+        return redirect()->route('mhs.index')
+                        ->with('success', 'Data berhasil ditambahkan');
     }
 
     /**
@@ -55,9 +75,11 @@ class MahasiswaController extends Controller
      * @param  \App\Mahasiswa  $mahasiswa
      * @return \Illuminate\Http\Response
      */
-    public function edit(Mahasiswa $mahasiswa)
+    public function edit(Mahasiswa $mahasiswa, $id)
     {
-        //
+        $prodi = Prodi::all();
+        $mhs = Mahasiswa::find($id);
+        return view('mahasiswa.edit', compact('prodi', 'mhs'));
     }
 
     /**
@@ -69,7 +91,14 @@ class MahasiswaController extends Controller
      */
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
-        //
+        $request->validate([
+            'nim' => 'required',
+        ]);
+
+        $mahasiswa->update($request->all());
+
+        return redirect()->route('mhs.index')
+                        ->with('success', 'Data berhasil diupdate');
     }
 
     /**
@@ -80,6 +109,8 @@ class MahasiswaController extends Controller
      */
     public function destroy(Mahasiswa $mahasiswa)
     {
-        //
+        $mahasiswa->delete();
+         return redirect()->route('mhs.index')
+        ->with('success','Data Berhasil Dihapus');
     }
 }

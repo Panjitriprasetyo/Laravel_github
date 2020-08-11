@@ -81,7 +81,8 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    panji
+                    Panji Tri Prasetyo <br>
+                    17.55.201.210
                 </div>
 
                 <div class="links">
